@@ -1,4 +1,0 @@
-action:<action item> [due date] @person #<project name>
-@prasad action:Simulation of AF MRC [1/1/17] #ESPARCO
-action: Khoa internship stipend @ben
-todo: Inventory management @manu @alan @chinmay [5/1/17]

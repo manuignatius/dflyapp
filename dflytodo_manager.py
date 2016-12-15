@@ -7,6 +7,8 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
+import dropbox
+
 try:
     import argparse
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
@@ -17,7 +19,7 @@ except ImportError:
 # at ~/.credentials/tasks-python-quickstart.json
 SCOPES = 'https://www.googleapis.com/auth/tasks.readonly'
 CLIENT_SECRET_FILE = 'client_secret.json'
-APPLICATION_NAME = 'Google Tasks API Python Quickstart'
+APPLICATION_NAME = 'Dragonfly TODO Manager'
 
 
 def get_credentials():
@@ -48,12 +50,27 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
-def main():
-    """Shows basic usage of the Google Tasks API.
+def parser(filename):
+    f = open(filename, 'r')
+    lines = f.readlines()
+    f.close()
 
-    Creates a Google Tasks API service object and outputs the first 10
-    task lists.
-    """
+    for i in lines:
+    #    print i
+        if i.find("todo:") != -1:
+            t = i.split()
+            t.remove("todo:")
+            print (t)
+            for j in t:
+                if j[0] == "@":
+                    print ("People: ", j)
+                    t.remove(j)
+                if j[0] == "[":
+                    print ("Due date: ", j)
+                    t.remove(j)
+            print (t)
+
+def task_getter():
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('tasks', 'v1', http=http)
@@ -72,29 +89,24 @@ def main():
 
     results_tasks = service.tasks().list(tasklist="@default").execute()
     items = results_tasks.get('items', [])
+    print('\nDefault tasks:')
     for item in items:
         # print('{0} ({1})'.format(item['title'], item['id']))
         print(item['title'])
 
+def dbx_getter():
+    f = open('dbx_secret', 'r')
+    dbx = dropbox.Dropbox(f.readlines()[0])
+    f.close()
+    # print (dbx.users_get_current_account())
+    for entry in dbx.files_list_folder('').entries:
+        print("filename:", entry.name)
+        # parser(entry.name)
+
+def main():
+    #TODO : Main loop here
+    dbx_getter()
+
 if __name__ == '__main__':
     main()
 
-def parser():
-    f = open('test.txt', 'r')
-    lines = f.readlines()
-    f.close()
-
-    for i in lines:
-    #    print i
-        if i.find("todo:") != -1:
-            t = i.split()
-            t.remove("todo:")
-            print (t)
-            for j in t:
-                if j[0] == "@":
-                    print ("People: ", j)
-                    t.remove(j)
-                if j[0] == "[":
-                    print ("Due date: ", j)
-                    t.remove(j)
-            print (t)
